@@ -1,27 +1,28 @@
 
 
-class Bidder:
+class DummyBidder:
 
-    def __init__(self, initial_position = "college"):
+    def __init__(self, id, initial_position = "college"):
         self.location = initial_position
         self.is_busy = False
         self.start_ride_time = 0
         self.current_ride_duration = 0
         self.next_location = initial_position
+        self.id = id
 
         self.collected_money = 0
 
     def bid(self, customers):
         """
         What bid do you have on every customer?
-        :param customers: list of tuples (destination, max_price)
-        :return: list of tuples (distance, max_price, bid), where bid = -1
+        :param customers: list of Customer objects
+        :return: list of tuples (customer, bid), where bid = -1
         if you don't want this ride, and bid <= max_price is what you're willing
-        to take on this customer
+        to take on this customer. Must have the same length as the passed in customers
         """
         bids = []
         for customer in customers:
-            bids.append((customer[0], customer[1], customer[1]//2))
+            bids.append((customer, customer.max_price//2))
         return bids
 
     def get_status(self, t):
@@ -47,14 +48,14 @@ class Bidder:
         """
         self.is_busy = True
         self.start_ride_time = t
-        self.current_ride_duration = assigned_ride[1]  # change that based on utils
+        self.current_ride_duration = 3  # change that based on utils
         self.next_location = assigned_ride[0]
 
         self.collected_money += assigned_ride[1]
 
 def tests():
-    b1 = Bidder("college")
-    b2 = Bidder("college")
+    b1 = DummyBidder("college")
+    b2 = DummyBidder("college")
     customers = [
         ("downtown", 20),
         ("sub1", 30),
@@ -75,5 +76,3 @@ def tests():
     print(b2.get_status(5))
     print(b2.get_status(15))
     print(b2.get_status(25))
-
-tests()
