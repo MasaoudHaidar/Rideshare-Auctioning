@@ -105,6 +105,25 @@ def generate_customers(step):
     
     return customers
 
+
+def custom_print(tt, is_debug_print=False):
+    # if it is a debug mode, print everything, else, only
+    # print non-debug outputs
+    if debug_mode:
+        print(tt)
+    elif not is_debug_print:
+        print(tt)
+
+
+class Customer:
+    def __init__(self, id, source, destination, max_price, spawn_time):
+        self.id = id
+        self.source = source
+        self.destination = destination
+        self.max_price = max_price
+        self.spawn_time = spawn_time
+        self.is_picked = False
+
 if __name__ == '__main__':
     generate_customers(136) # weekday, index 8
 

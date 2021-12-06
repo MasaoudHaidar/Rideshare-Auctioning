@@ -1,15 +1,6 @@
 import random
 from DummyBidder import DummyBidder
-
-"""
- - Every step:
-      - delete old customers and mark them (after some time steps)
-      - generate new customers
-      - for every node, collect all customers, call the bidder function from every bidder in the node and collect the bids
-      - determine the winner of every customer,
-        update the revenue, location, and money for every driver.
-        (Location and money should be updated by calling the bidder)
-"""
+from util import Customer, custom_print, distance, generate_customers
 
 end_of_week_time = 10
 max_wait_time = 6
@@ -25,25 +16,6 @@ locations = [
 debug_mode = True
 
 
-def custom_print(tt, is_debug_print=False):
-    # if it is a debug mode, print everything, else, only
-    # print non-debug outputs
-    if debug_mode:
-        print(tt)
-    elif not is_debug_print:
-        print(tt)
-
-
-class Customer:
-    def __init__(self, id, source, destination, max_price, spawn_time):
-        self.id = id
-        self.source = source
-        self.destination = destination
-        self.max_price = max_price
-        self.spawn_time = spawn_time
-        self.is_picked = False
-
-
 def get_drivers():
     return {
         0: DummyBidder(0, "college"),
@@ -55,6 +27,7 @@ def run():
     customers = []  # list of Customer objects
     drivers = get_drivers()
     revenue = 0
+    customers_unsatisfied = 0
     customer_id_counter = 0
 
     for current_time in range(end_of_week_time):
@@ -72,15 +45,12 @@ def run():
             if current_time - spawn_time < max_wait_time:
                 current_customers.append(customer)
                 current_population[source] += 1
+            else:
+                customers_unsatisfied += 1
         customers = current_customers
 
         # generate new costumers
-        # edit based on utils
-        new_customers = [
-            ("sub1", "sub2"),
-            ("sub2", "college"),
-            ("college", "sub1"),
-        ]
+        new_customers = generate_customers(current_time)
 
         # add the new customers and determine their payments
         for source, destination in new_customers:
@@ -147,7 +117,8 @@ def run():
                 current_customers.append(customer)
         customers = current_customers
 
-        custom_print((revenue), True)
+        custom_print(("revenue:", revenue))
+        custom_print(("customers unsatisfies:", customers_unsatisfied))
 
 
 run()

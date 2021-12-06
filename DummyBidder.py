@@ -1,4 +1,6 @@
+from util import distance
 
+distance_dict = distance()
 
 class DummyBidder:
 
@@ -48,8 +50,8 @@ class DummyBidder:
         """
         self.is_busy = True
         self.start_ride_time = t
-        self.current_ride_duration = 3  # change that based on utils
         self.next_location = assigned_ride[0]
+        self.current_ride_duration = distance_dict[self.location][self.next_location]
 
         self.collected_money += assigned_ride[1]
 
