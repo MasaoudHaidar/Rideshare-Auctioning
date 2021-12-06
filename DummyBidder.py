@@ -1,10 +1,12 @@
-from util import distance
+from util import distance, generate_rate
 
 distance_dict = distance()
+
 
 class DummyBidder:
 
     def __init__(self, id, initial_position = "college"):
+        # general utilities
         self.location = initial_position
         self.is_busy = False
         self.start_ride_time = 0
@@ -12,9 +14,16 @@ class DummyBidder:
         self.next_location = initial_position
         self.id = id
 
-        self.collected_money = 0
+        # personalized values
+        self.personal_rate = generate_rate()  # rate per time step
 
-    def bid(self, customers):
+        # book keeping
+        self.collected_money = 0
+        self.time_worked = 0
+        self.driver_type = "Dummy"
+
+
+    def bid(self, customers, _current_time):
         """
         What bid do you have on every customer?
         :param customers: list of Customer objects
@@ -54,6 +63,7 @@ class DummyBidder:
         self.current_ride_duration = distance_dict[self.location][self.next_location]
 
         self.collected_money += assigned_ride[1]
+        self.time_worked += self.current_ride_duration
 
 def tests():
     b1 = DummyBidder("college")

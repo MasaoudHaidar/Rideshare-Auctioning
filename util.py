@@ -38,6 +38,11 @@ spawn_dict = {"weekday": [{"college": 8, "downtown": 8, "airport": 8, "sub1": 0,
                           {"college": 20, "downtown": 35, "airport": 20, "sub1": 20, "sub2": 13, "beach": 20},  # 6-9p
                           {"college": 30, "downtown": 35, "airport": 20, "sub1": 25, "sub2": 3, "beach": 10}]} # 9-12a
 
+for week_time in ["weekday", "weekend"]:
+    for chunk in range(len(spawn_dict[week_time])):
+        for location in locations:
+            spawn_dict[week_time][chunk][location] //= 2
+
 # NOTE: for simplicity, we made this time independent, even though that is not realistic
 movement_dict = {"college": {"college": .1, "downtown": .3, "airport": .1, "beach": .2, "sub1": .2, "sub2": .1}, 
              "downtown": {"college": .3, "downtown": .2, "airport": 0, "beach": .05, "sub1": .25, "sub2": .2},
@@ -82,11 +87,11 @@ def distance():
 # given a timestep, returns the spawn rate of map locations
 def spawn(step):
     key, index = find_time(step)
-    return movement_dict[key][index] 
+    return spawn_dict[key][index]
 
 # given a timestep, returns the movement probability between map locations
-def movement_prob(dest):
-    return movement_dict[dest]
+def movement_prob():
+    return movement_dict
 
 def generate_customers(step):
     customers = []
@@ -107,7 +112,7 @@ def generate_customers(step):
 
 
 def custom_print(tt, is_debug_print=False):
-    debug_mode = True
+    debug_mode = False
     # if it is a debug mode, print everything, else, only
     # print non-debug outputs
     if debug_mode:
@@ -129,6 +134,8 @@ class Customer:
 def generate_rate():
     return random.uniform(3, 5)  # NOTE 18 - 30 dollars/hour
 
+def calculate_charge(distance, population):
+    return 10 * distance + population // 3
 
 if __name__ == '__main__':
     generate_customers(136) # weekday, index 8

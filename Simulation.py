@@ -1,11 +1,16 @@
 import random
 from DummyBidder import DummyBidder
-from util import Customer, custom_print, distance, generate_customers
+from StrategyBidder import StrategyBidder
+from TruthfulBidder import TruthfulBidder
+from util import Customer, custom_print, distance, generate_customers, calculate_charge
+import numpy as np
 
 distance_dict = distance()
 
-end_of_week_time = 10
-max_wait_time = 6
+strategy_drivers = True
+end_of_week_time = 1008
+number_of_drivers = 500
+max_wait_time = 3
 locations = [
     "college",
     "sub1",
@@ -15,22 +20,44 @@ locations = [
     "downtown"
 ]
 
+def get_random_driver():
+    x = random.randint(1, 3)
+    if x == 1:
+        return DummyBidder
+    elif x == 2:
+        return TruthfulBidder
+    return StrategyBidder
 
-def get_drivers():
+def get_diverse_drivers():
     return {
-        0: DummyBidder(0, "college"),
-        1: DummyBidder(1, "sub1")
+        x: get_random_driver()(x, locations[x % len(locations)])
+        for x in range(number_of_drivers)
     }
 
+def get_strategy_drivers():
+    possible_weights = [x/10 for x in range(10)]
+    return {
+        x: StrategyBidder(x,
+                          locations[x % len(locations)],
+                          possible_weights[x % len(possible_weights)])
+        for x in range(number_of_drivers)
+    }
 
 def run():
     customers = []  # list of Customer objects
-    drivers = get_drivers()
+    drivers = None
+    if strategy_drivers:
+        drivers = get_strategy_drivers()
+    else:
+        drivers = get_diverse_drivers()
     revenue = 0
     customers_unsatisfied = 0
+    customers_satisfied = 0
     customer_id_counter = 0
 
     for current_time in range(end_of_week_time):
+        if current_time % 100 == 0:
+            custom_print(("Step: ", current_time))
 
         custom_print(("current time:", current_time), True)
 
@@ -58,7 +85,7 @@ def run():
                 Customer(customer_id_counter,
                          source,
                          destination,
-                         10 * distance_dict[source][destination] + current_population[source] // 3,
+                         calculate_charge(distance_dict[source][destination], current_population[source]),
                          current_time)
             )
             customer_id_counter += 1
@@ -85,7 +112,7 @@ def run():
             custom_print((driver.id, driver.is_busy, driver.location), True)
             if is_busy:
                 continue
-            driver_bids = driver.bid(current_customers_per_location[location])
+            driver_bids = driver.bid(current_customers_per_location[location], current_time)
             all_bids[location].append((
                 driver.id,
                 driver_bids
@@ -108,6 +135,7 @@ def run():
                 custom_print((driver_id, customer.destination), True)
                 revenue += customer.max_price - bid_amount
                 customer.is_picked = True
+                customers_satisfied += 1
                 break
 
         # delete old customers
@@ -117,8 +145,32 @@ def run():
                 current_customers.append(customer)
         customers = current_customers
 
-        custom_print(("revenue:", revenue))
-        custom_print(("customers unsatisfies:", customers_unsatisfied))
+        custom_print(len(customers), True)
 
-
+    custom_print("Mean driver results:")
+    for driver_type in ["Dummy", "Truthful", "Strategy"]:
+        current_money_made = [driver.collected_money for driver in drivers.values() if
+                              driver.driver_type == driver_type]
+        current_time_worked = [driver.time_worked for driver in drivers.values() if
+                              driver.driver_type == driver_type]
+        if len(current_money_made) == 0:
+            continue
+        custom_print((driver_type, "Mean Money Made", np.mean(current_money_made)))
+        custom_print((driver_type, "Mean Time worked", np.mean(current_time_worked)))
+        custom_print((driver_type, "Mean Rate", np.mean(current_money_made) / np.mean(current_time_worked)))
+    if strategy_drivers:
+        for x in range(10):
+            weight = x/10
+            current_money_made = [driver.collected_money for driver in drivers.values() if
+                                  driver.look_into_future_weight == weight]
+            current_time_worked = [driver.time_worked for driver in drivers.values() if
+                                   driver.look_into_future_weight == weight]
+            if len(current_money_made) == 0:
+                continue
+            custom_print((weight, "Mean Money Made", np.mean(current_money_made)))
+            custom_print((weight, "Mean Time worked", np.mean(current_time_worked)))
+            custom_print((weight, "Mean Rate", np.mean(current_money_made) / np.mean(current_time_worked)))
+    custom_print(("revenue:", revenue))
+    custom_print(("customers satisfies:", customers_satisfied))
+    custom_print(("customers unsatisfies:", customers_unsatisfied))
 run()
