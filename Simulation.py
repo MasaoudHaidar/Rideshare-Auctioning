@@ -7,7 +7,6 @@ import numpy as np
 
 distance_dict = distance()
 
-strategy_drivers = True
 end_of_week_time = 1008
 number_of_drivers = 500
 max_wait_time = 3
@@ -43,9 +42,8 @@ def get_strategy_drivers():
         for x in range(number_of_drivers)
     }
 
-def run():
+def run(strategy_drivers = True):
     customers = []  # list of Customer objects
-    drivers = None
     if strategy_drivers:
         drivers = get_strategy_drivers()
     else:
@@ -148,16 +146,7 @@ def run():
         custom_print(len(customers), True)
 
     custom_print("Mean driver results:")
-    for driver_type in ["Dummy", "Truthful", "Strategy"]:
-        current_money_made = [driver.collected_money for driver in drivers.values() if
-                              driver.driver_type == driver_type]
-        current_time_worked = [driver.time_worked for driver in drivers.values() if
-                              driver.driver_type == driver_type]
-        if len(current_money_made) == 0:
-            continue
-        custom_print((driver_type, "Mean Money Made", np.mean(current_money_made)))
-        custom_print((driver_type, "Mean Time worked", np.mean(current_time_worked)))
-        custom_print((driver_type, "Mean Rate", np.mean(current_money_made) / np.mean(current_time_worked)))
+    results = dict()
     if strategy_drivers:
         for x in range(10):
             weight = x/10
@@ -167,10 +156,28 @@ def run():
                                    driver.look_into_future_weight == weight]
             if len(current_money_made) == 0:
                 continue
-            custom_print((weight, "Mean Money Made", np.mean(current_money_made)))
-            custom_print((weight, "Mean Time worked", np.mean(current_time_worked)))
-            custom_print((weight, "Mean Rate", np.mean(current_money_made) / np.mean(current_time_worked)))
+            results[x] = (
+                np.mean(current_money_made),
+                np.mean(current_time_worked),
+                np.mean(current_money_made) / np.mean(current_time_worked)
+            )
+    else:
+        for driver_type in ["Dummy", "Truthful", "Strategy"]:
+            current_money_made = [driver.collected_money for driver in drivers.values() if
+                                  driver.driver_type == driver_type]
+            current_time_worked = [driver.time_worked for driver in drivers.values() if
+                                   driver.driver_type == driver_type]
+            if len(current_money_made) == 0:
+                continue
+            results[driver_type] = (
+                np.mean(current_money_made),
+                np.mean(current_time_worked),
+                np.mean(current_money_made) / np.mean(current_time_worked)
+            )
+    custom_print(results)
     custom_print(("revenue:", revenue))
     custom_print(("customers satisfies:", customers_satisfied))
     custom_print(("customers unsatisfies:", customers_unsatisfied))
-run()
+    return revenue, results
+
+#run(False)

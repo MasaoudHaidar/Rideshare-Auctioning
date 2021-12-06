@@ -24,7 +24,7 @@ class TruthfulBidder:
         self.driver_type = "Truthful"
 
 
-    def bid(self, customers, _current_time):
+    def bid(self, customers, current_time):
         """
         What bid do you have on every customer?
         :param customers: list of Customer objects
@@ -32,6 +32,10 @@ class TruthfulBidder:
         if you don't want this ride, and bid <= max_price is what you're willing
         to take on this customer. Must have the same length as the passed in customers
         """
+        if len(customers) == 0:
+            self.assign_ride(current_time, ("downtown", 0))
+            return []
+
         bids = []
         for customer in customers:
             current_max_price = customer.max_price
