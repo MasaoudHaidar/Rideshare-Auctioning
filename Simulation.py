@@ -2,6 +2,8 @@ import random
 from DummyBidder import DummyBidder
 from util import Customer, custom_print, distance, generate_customers
 
+distance_dict = distance()
+
 end_of_week_time = 10
 max_wait_time = 6
 locations = [
@@ -12,8 +14,6 @@ locations = [
     "airport",
     "downtown"
 ]
-
-debug_mode = True
 
 
 def get_drivers():
@@ -58,7 +58,7 @@ def run():
                 Customer(customer_id_counter,
                          source,
                          destination,
-                         2 + current_population[source],  # should be distance*constant, edit based on utils
+                         10 * distance_dict[source][destination] + current_population[source] // 3,
                          current_time)
             )
             customer_id_counter += 1

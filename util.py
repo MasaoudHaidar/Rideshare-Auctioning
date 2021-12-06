@@ -107,6 +107,7 @@ def generate_customers(step):
 
 
 def custom_print(tt, is_debug_print=False):
+    debug_mode = True
     # if it is a debug mode, print everything, else, only
     # print non-debug outputs
     if debug_mode:
@@ -123,6 +124,11 @@ class Customer:
         self.max_price = max_price
         self.spawn_time = spawn_time
         self.is_picked = False
+
+
+def generate_rate():
+    return random.uniform(3, 5)  # NOTE 18 - 30 dollars/hour
+
 
 if __name__ == '__main__':
     generate_customers(136) # weekday, index 8
